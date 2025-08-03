@@ -58,6 +58,7 @@ Name               | Description
 -------------------|------------
 web.listen-address | Address to listen on for web interface and telemetry, defaults to `:9165`.
 web.telemetry-path | A path under which to expose metrics, defaults to `/metrics`.
+web.config.file    | Configuration file for TLS and Basic Authentication.
 ka.json            | Send SIGJSON and decode JSON file instead of parsing text files, defaults to `false`.
 ka.pid-path        | A path for Keepalived PID, defaults to `/var/run/keepalived.pid`.
 cs                 | Health Check script path to be execute for each VIP.
@@ -65,6 +66,20 @@ container-name     | Keepalived container name to export metrics from Keepalived
 container-tmp-dir  | Keepalived container tmp volume path, defaults to `/tmp`.
 
 **Note:** For `ka.json` option requirement is to have Keepalived compiled with `--enable-json` configure option.
+
+### TLS and Basic Authentication
+
+To enable TLS and/or Basic Authentication, create a configuration file and pass it via the `--web.config.file` flag:
+
+```yaml
+tls_server_config:
+  cert_file: server.crt
+  key_file: server.key
+basic_auth_users:
+  prometheus: $2y$10$X0jHn2QU5iiF/0wLGwSqEOCF1nA1M5CkQU8mhgvuQ4D4fXZJ0M3fO
+```
+
+For more details on the configuration format, see the [exporter-toolkit documentation](https://github.com/prometheus/exporter-toolkit).
 
 ### Keepalived on Docker and Keepalived Exporter on host
 

@@ -14,11 +14,13 @@ import (
 	"github.com/prometheus/client_golang/prometheus/collectors/version"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	common_version "github.com/prometheus/common/version"
+	"github.com/prometheus/exporter-toolkit/web"
 )
 
 func main() {
 	listenAddr := flag.String("web.listen-address", ":9165", "Address to listen on for web interface and telemetry.")
 	metricsPath := flag.String("web.telemetry-path", "/metrics", "A path under which to expose metrics.")
+	webConfigFile := flag.String("web.config.file", "", "Configuration file for TLS and Basic Authentication.")
 	keepalivedJSON := flag.Bool("ka.json", false, "Send SIGJSON and decode JSON file instead of parsing text files.")
 	keepalivedPID := flag.String("ka.pid-path", "/var/run/keepalived.pid", "A path for Keepalived PID")
 	keepalivedContainerPID := flag.String("ka.container.pid-path", "", "A path for Keepalived PID in container mode")
@@ -90,10 +92,18 @@ func main() {
 	)
 
 	server := &http.Server{
-		Addr:              *listenAddr,
 		ReadHeaderTimeout: 5 * time.Second,
 	}
-	if err := server.ListenAndServe(); err != nil {
+
+	addresses := []string{*listenAddr}
+	systemdSocket := false
+	flags := &web.FlagConfig{
+		WebListenAddresses: &addresses,
+		WebSystemdSocket:   &systemdSocket,
+		WebConfigFile:      webConfigFile,
+	}
+
+	if err := web.ListenAndServe(server, flags, slog.Default()); err != nil {
 		slog.Error("Failed to start HTTP server", "error", err)
 		os.Exit(1)
 	}
